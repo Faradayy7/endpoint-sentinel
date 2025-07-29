@@ -1,0 +1,39 @@
+{
+  "name": "endpoint-sentinel-qa",
+  "version": "1.0.0",
+  "description": "Automated QA testing for media API endpoints using Playwright",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "test": "playwright test",
+    "test:headed": "playwright test --headed",
+    "test:debug": "playwright test --debug",
+    "test:ui": "playwright test --ui",
+    "test:report": "playwright show-report",
+    "test:media": "playwright test tests/api/media",
+    "test:smoke": "playwright test --grep @smoke",
+    "test:regression": "playwright test --grep @regression",
+    "install:browsers": "playwright install",
+    "lint": "eslint . --ext .js",
+    "lint:fix": "eslint . --ext .js --fix",
+    "format": "prettier --write ."
+  },
+  "keywords": [
+    "playwright",
+    "api-testing",
+    "qa-automation",
+    "testing",
+    "media-api"
+  ],
+  "author": "QA Team",
+  "license": "MIT",
+  "devDependencies": {
+    "@playwright/test": "^1.40.0",
+    "eslint": "^8.52.0",
+    "prettier": "^3.0.0"
+  },
+  "dependencies": {
+    "dotenv": "^16.3.1",
+    "date-fns": "^2.30.0"
+  }
+}

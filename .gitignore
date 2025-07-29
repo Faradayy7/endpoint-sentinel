@@ -1,0 +1,33 @@
+# Environment Variables
+.env
+.env.local
+.env.*.local
+
+# Test Results
+test-results/
+test-artifacts/
+playwright-report/
+test-results.json
+
+# Node modules
+node_modules/
+
+# Logs
+*.log
+logs/
+
+# IDE
+.vscode/settings.json
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.temp
+
+# Cache
+.cache/
+.eslintcache
