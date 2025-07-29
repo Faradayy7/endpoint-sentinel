@@ -422,3 +422,88 @@ endpoint-sentinel-qa/
 **Datos de prueba**: Combinación de filtros con datos reales  
 **Resultado esperado**: Respuesta 200 con medias que cumplen todos los filtros.
 
+---
+
+## 🛠️ Parámetros del Endpoint Probados
+
+El endpoint `/api/media` soporta muchos parámetros. Las pruebas cubren:
+
+### Autenticación
+- `X-API-Token` header
+- `token` query parameter
+
+### Filtros Básicos
+- `all` - mostrar todos los campos
+- `id` - filtrar por ID específico
+- `type` - tipo de media (all, audio, video)
+- `status` - estado (OK, TRASH)
+- `published` - solo publicados
+
+### Filtros de Texto
+- `title` + `title-rule` - filtro de título
+- `query` - búsqueda en título
+- `description` - búsqueda en descripción
+
+### Filtros Numéricos
+- `min_duration` / `max_duration` - duración en segundos
+- `min_views` / `max_views` - número de vistas
+
+### Filtros de Fecha
+- `created_after` / `created_before` - fecha de creación  
+- `recorded_after` / `recorded_before` - fecha de grabación
+- `available_from` / `available_until` - fecha de disponibilidad
+
+### Paginación y Ordenamiento
+- `limit` - máximo elementos (default: 100)
+- `skip` - elementos a saltar (default: 0) 
+- `sort` - ordenar por campo (ej: `-date_created`)
+- `count` - incluir total de elementos
+
+## 📊 Reportes
+
+Los reportes se generan automáticamente en:
+- `test-results/html-report/` - Reporte HTML interactivo
+- `test-results/test-results.json` - Resultados en JSON
+
+Para ver el reporte HTML:
+```bash
+npm run test:report
+```
+
+## 🔧 Personalización
+
+### Agregar nuevas pruebas
+
+1. Crea un nuevo archivo `.spec.js` en `tests/api/`
+2. Importa las utilidades necesarias:
+   ```javascript
+   import { test, expect } from '@playwright/test';
+   import { ApiClient } from '../utils/api-client.js';
+   ```
+
+### Modificar datos de prueba
+
+Edita `tests/fixtures/media-test-data.js` para agregar nuevos casos de prueba.
+
+### Cambiar configuración
+
+Modifica `tests/config/environment.js` para ajustar configuraciones.
+
+## 🐛 Solución de Problemas
+
+### Error: "Faltan configuraciones requeridas"
+- Verifica que el archivo `.env` existe
+- Asegúrate de que `API_BASE_URL` y `API_TOKEN` estén definidos
+
+### Error: "Cannot find module"
+- Ejecuta `npm install`
+- Verifica que estás usando Node.js 16+
+
+### Las pruebas fallan con 401/403
+- Verifica que el token API es válido
+- Confirma que el token tiene permisos para el endpoint
+
+### Timeouts en las pruebas
+- Aumenta `TEST_TIMEOUT` en `.env`
+- Verifica la conectividad con la API
+
