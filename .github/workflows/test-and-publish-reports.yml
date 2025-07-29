@@ -1,0 +1,144 @@
+name: 🧪 Run Tests and Publish Reports
+
+on:
+  push:
+    branches: [ main, feature/* ]
+  pull_request:
+    branches: [ main ]
+  schedule:
+    # Ejecutar tests automáticamente cada día a las 9 AM
+    - cron: '0 9 * * *'
+  workflow_dispatch: # Permite ejecutar manualmente
+
+jobs:
+  test-and-publish:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: 📥 Checkout repository
+      uses: actions/checkout@v4
+      
+    - name: 🟢 Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        
+    - name: 📦 Install dependencies
+      run: npm ci
+      
+    - name: 🎭 Install Playwright browsers
+      run: npx playwright install --with-deps
+      
+    - name: 🧪 Run tests
+      env:
+        API_BASE_URL: ${{ secrets.API_BASE_URL }}
+        API_TOKEN: ${{ secrets.API_TOKEN }}
+      run: |
+        npm test
+      continue-on-error: true # Continuar aunque fallen tests
+      
+    - name: 📊 Generate timestamp
+      id: timestamp
+      run: |
+        echo "timestamp=$(date +'%Y-%m-%d_%H-%M-%S')" >> $GITHUB_OUTPUT
+        echo "date=$(date +'%Y-%m-%d %H:%M:%S UTC')" >> $GITHUB_OUTPUT
+        
+    - name: 📋 Prepare reports directory
+      run: |
+        mkdir -p docs/reports
+        # Copiar reporte HTML principal
+        if [ -f "playwright-report/index.html" ]; then
+          cp -r playwright-report/* docs/reports/
+        fi
+        
+        # Copiar resultados JSON
+        if [ -f "test-results/test-results.json" ]; then
+          cp test-results/test-results.json docs/reports/
+        fi
+        
+        # Crear index principal con lista de reportes
+        cat > docs/index.html << 'EOF'
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>Endpoint Sentinel - Test Reports</title>
+            <style>
+                body { font-family: Arial, sans-serif; margin: 40px; background: #f5f5f5; }
+                .container { max-width: 800px; margin: 0 auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+                h1 { color: #2c3e50; border-bottom: 3px solid #3498db; padding-bottom: 10px; }
+                .report-card { background: #ecf0f1; padding: 20px; margin: 20px 0; border-radius: 6px; border-left: 4px solid #3498db; }
+                .report-card h3 { margin-top: 0; color: #2c3e50; }
+                .btn { display: inline-block; padding: 10px 20px; background: #3498db; color: white; text-decoration: none; border-radius: 4px; margin: 5px; }
+                .btn:hover { background: #2980b9; }
+                .timestamp { color: #7f8c8d; font-size: 0.9em; }
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <h1>🛡️ Endpoint Sentinel - Test Reports</h1>
+                
+                <div class="report-card">
+                    <h3>📊 Latest Test Execution</h3>
+                    <p class="timestamp">Generated: ${{ steps.timestamp.outputs.date }}</p>
+                    <p>Complete test suite execution with detailed analytics and validations.</p>
+                    <a href="reports/index.html" class="btn">📋 View HTML Report</a>
+                    <a href="reports/test-results.json" class="btn">📄 Download JSON Results</a>
+                </div>
+                
+                <div class="report-card">
+                    <h3>🎯 Test Coverage</h3>
+                    <ul>
+                        <li>✅ 21 comprehensive test cases</li>
+                        <li>🔍 Real data validation</li>
+                        <li>📊 Advanced analytics and logging</li>
+                        <li>🏷️ Category and publication status filtering</li>
+                        <li>⚡ Performance optimized execution</li>
+                    </ul>
+                </div>
+                
+                <div class="report-card">
+                    <h3>🔗 Quick Links</h3>
+                    <a href="https://github.com/Faradayy7/endpoint-sentinel" class="btn">📂 View Repository</a>
+                    <a href="https://github.com/Faradayy7/endpoint-sentinel/actions" class="btn">🔄 View Actions</a>
+                </div>
+            </div>
+        </body>
+        </html>
+        EOF
+        
+    - name: 🚀 Deploy to GitHub Pages
+      uses: peaceiris/actions-gh-pages@v3
+      if: github.ref == 'refs/heads/main'
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: ./docs
+        
+    - name: 📤 Send Slack notification
+      if: always()
+      uses: 8398a7/action-slack@v3
+      with:
+        status: ${{ job.status }}
+        custom_payload: |
+          {
+            "text": "🧪 Endpoint Sentinel Test Results",
+            "attachments": [
+              {
+                "color": "${{ job.status == 'success' && 'good' || job.status == 'failure' && 'danger' || 'warning' }}",
+                "fields": [
+                  {
+                    "title": "📊 Test Execution",
+                    "value": "Status: ${{ job.status }}\nTimestamp: ${{ steps.timestamp.outputs.date }}",
+                    "short": false
+                  },
+                  {
+                    "title": "🔗 Quick Access",
+                    "value": "<https://faradayy7.github.io/endpoint-sentinel/|📋 View Report> | <https://faradayy7.github.io/endpoint-sentinel/reports/test-results.json|📄 Download JSON>",
+                    "short": false
+                  }
+                ]
+              }
+            ]
+          }
+      env:
+        SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}

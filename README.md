@@ -42,20 +42,36 @@ npm run install:browsers
 ### Comandos básicos
 
 ```bash
-# Ejecutar todas las pruebas
+# Ejecutar todos los 21 test cases
 npm test
 
-# Ejecutar solo pruebas smoke (rápidas)
+# Ejecutar solo el test smoke (TC-001 - configuración inicial)
 npm run test:smoke
 
-# Ejecutar pruebas con interfaz visual
+# Ejecutar con interfaz visual para ver resultados
 npm run test:ui
 
-# Ejecutar pruebas en modo headed (ver navegador)
+# Ejecutar en modo headed (ver navegador - útil para debug)
 npm run test:headed
 
-# Ejecutar solo pruebas del endpoint media
+# Ejecutar solo pruebas del endpoint media (todos los 21 casos)
 npm run test:media
+```
+
+### Comandos para casos específicos
+
+```bash
+# Ejecutar solo un test case específico
+npx playwright test -g "TC-API-G-MEDIA-001"
+
+# Ejecutar tests de categorías (TC-017 y TC-018)
+npx playwright test -g "without_category"
+
+# Ejecutar tests de filtros (TC-005 al TC-011)
+npx playwright test -g "Filtro"
+
+# Ejecutar tests de paginación (TC-004, TC-014, TC-015)
+npx playwright test -g "paginación|count"
 ```
 
 ### Comandos avanzados
@@ -92,23 +108,109 @@ endpoint-sentinel-qa/
 └── package.json                   # Dependencias y scripts
 ```
 
-## 🎯 Tipos de Pruebas Incluidas
+## 🎯 Test Cases Implementados (21 casos completos)
 
-### Pruebas Smoke (@smoke)
-- ✅ Endpoint responde correctamente
-- ✅ Autenticación funciona
-- ✅ Paginación básica
-- ✅ Filtros básicos
+### 📊 Suite Completa: Media API - Pruebas Completas
 
-### Pruebas Completas
-- 🔍 **Filtros de texto**: título, query, descripción
-- ⏱️ **Filtros de duración**: min/max duración
-- 👁️ **Filtros de vistas**: min/max vistas  
-- 📅 **Filtros de fecha**: creación, grabación, disponibilidad
-- 🏷️ **Filtros de categorías**: múltiples reglas
-- 🔤 **Ordenamiento**: por fecha, título, etc.
-- 📄 **Paginación**: límites, saltos
-- 🔐 **Autenticación**: header y query parameter
+#### 🚀 Tests de Configuración y Datos Base
+- **TC-API-G-MEDIA-001** `@smoke` - Obtener datos iniciales y configurar datos de prueba
+  - Recolecta 50 medias para usar en tests posteriores
+  - Procesa y almacena IDs, títulos, tipos, categorías, etc.
+  - Validación completa de estructura de respuesta `{status: "OK", data: []}`
+
+#### 🔍 Tests de Filtrado por ID y Validación
+- **TC-API-G-MEDIA-002** - Filtro por ID específico usando datos reales
+  - Toma un ID real del test anterior y busca medias específicas
+  - Valida que el filtro `id` funciona correctamente
+- **TC-API-G-MEDIA-003** - Validación completa de estructura de respuesta
+  - Verifica todos los campos obligatorios: id, title, type, duration, views, etc.
+  - Valida tipos de datos y objetos anidados (access_restrictions, meta, thumbnails)
+
+#### 📄 Tests de Paginación y Navegación
+- **TC-API-G-MEDIA-004** - Validación de parámetros de paginación
+  - Prueba que el parámetro `limit` es respetado correctamente
+- **TC-API-G-MEDIA-014** - Paginación segunda página
+  - Valida navegación entre páginas usando `skip` y `limit`
+- **TC-API-G-MEDIA-015** - Parámetro count para obtener total
+  - Prueba el parámetro `count=true` para obtener totales disponibles
+
+#### 🔤 Tests de Búsqueda y Filtros de Texto
+- **TC-API-G-MEDIA-005** - Búsqueda por palabra clave del título real
+  - Extrae palabras de títulos reales y las busca con `query`
+- **TC-API-G-MEDIA-006** - Filtro por título exacto usando datos reales
+  - Usa títulos reales con `title` + `title-rule: "is"` para búsquedas exactas
+- **TC-API-G-MEDIA-007** - Filtro por título que contiene texto real
+  - Busca texto dentro de títulos con `title` + `title-rule: "contains"`
+
+#### ⏱️ Tests de Filtros Numéricos
+- **TC-API-G-MEDIA-008** - Filtro por duración basado en datos reales
+  - Calcula rangos de duración de datos reales y filtra con `min_duration`/`max_duration`
+- **TC-API-G-MEDIA-009** - Filtro por vistas basado en datos reales
+  - Usa estadísticas reales de vistas para filtrar con `min_views`
+
+#### 🎬 Tests de Tipo y Clasificación
+- **TC-API-G-MEDIA-010** - Filtro por tipo de media usando datos reales
+  - Filtra por tipos encontrados (audio, video) usando parámetro `type`
+
+#### 📅 Tests de Filtros de Fecha
+- **TC-API-G-MEDIA-011** - Filtro por fecha usando datos reales
+  - Usa rangos de fechas reales con `created_after`/`created_before`
+- **TC-API-G-MEDIA-012** - Filtro por fecha de creación posterior
+  - Filtra medias creadas después de fecha específica
+- **TC-API-G-MEDIA-013** - Ordenamiento por fecha descendente
+  - Valida ordenamiento con `sort` por fecha descendente
+
+#### 🏷️ Tests de Tags y Categorías
+- **TC-API-G-MEDIA-016** - Filtro por tag usando datos reales
+  - Filtra por tags encontrados en datos reales con `tag` + `tags-rule: "in_any"`
+- **TC-API-G-MEDIA-017** - Filtro sin categoría usando `without_category=true`
+  - **Análisis detallado**: Cuenta medias CON y SIN categorías
+  - **Validación estricta**: Solo debe retornar medias sin categorías
+  - **Logging avanzado**: Estadísticas y ejemplos de lo encontrado
+- **TC-API-G-MEDIA-018** - Filtro completo usando `without_category=false`
+  - **Comportamiento correcto**: Incluye TODAS las medias (con y sin categorías)
+  - **Análisis estadístico**: Top 5 categorías más comunes
+  - **Muestra de datos**: Ejemplos de medias con sus categorías
+
+#### 🔒 Tests de Estado de Publicación
+- **TC-API-G-MEDIA-019** - Filtro por estado de publicación
+  - Filtra con `is_published=true` y analiza estados de inicialización
+  - **Breakdown detallado**: Publicadas+Inicializadas, Publicadas+No inicializadas, etc.
+
+#### 🧪 Tests de Validación Avanzada
+- **TC-API-G-MEDIA-020** - Validación de campos específicos según respuesta real
+  - Valida estructura completa de campos reales de la API
+  - **Campos específicos**: access_restrictions, access_rules, preview, show_info
+  - **Validaciones técnicas**: protocols.hls (URLs .m3u8), meta (resoluciones), thumbnails
+  - **Arrays especializados**: tracks, playlist, meta con codec/resolution
+
+#### 🔄 Tests de Casos Complejos
+- **TC-API-G-MEDIA-021** - Combinación de filtros usando datos reales
+  - Combina múltiples filtros: `type`, `query`, `id` simultáneamente
+  - Valida que los filtros funcionan en conjunto
+
+## ✨ Características Especiales del Framework
+
+### 🧠 Inteligencia de Datos Reales
+- **Test Data Manager**: Procesa datos reales de la API para usar en tests posteriores
+- **Adaptabilidad**: Los tests se adaptan a los datos disponibles (skip si no hay datos)
+- **Reutilización**: Un test inicial recolecta datos que todos los demás reutilizan
+
+### 📊 Logging y Analytics Avanzados
+- **Análisis detallado**: Cada test incluye estadísticas y breakdowns
+- **Logging con emojis**: Fácil de leer y entender en los reportes
+- **Evidencia completa**: Muestra qué encontró, qué validó y por qué pasó/falló
+
+### 🎯 Validaciones Inteligentes
+- **Estructura real**: Valida campos que realmente existen en la API
+- **Flexibilidad**: Se adapta a diferentes formatos de respuesta
+- **Cobertura completa**: Desde campos básicos hasta estructuras complejas anidadas
+
+### 🔄 Arquitectura Modular
+- **ApiClient**: Cliente HTTP especializado con validaciones JSON
+- **Logger**: Sistema de logging estructurado con niveles
+- **TestDataManager**: Gestor inteligente de datos de prueba
+- **Fixtures**: Datos organizados y reutilizables
 
 ## 🛠️ Parámetros del Endpoint Probados
 
@@ -144,6 +246,32 @@ El endpoint `/api/media` soporta muchos parámetros. Las pruebas cubren:
 - `skip` - elementos a saltar (default: 0) 
 - `sort` - ordenar por campo (ej: `-date_created`)
 - `count` - incluir total de elementos
+
+## 📊 Resultados y Métricas
+
+### 📈 Performance Esperado
+- **21 test cases** ejecutados en aproximadamente **9-12 segundos**
+- **1 test skipped** (configuración inicial que siempre se ejecuta)
+- **Cobertura completa** de todos los parámetros principales del endpoint
+
+### 📋 Ejemplo de Salida de Logs
+```
+📊 ANÁLISIS DETALLADO - without_category=false:
+   🔢 Total de medias obtenidas: 100
+   ✅ Medias CON categorías: 50  
+   ✅ Medias SIN categorías (también esperadas): 50
+   📈 Top categorías encontradas:
+      1. "Deportes": 15 medias
+      2. "Noticias": 12 medias  
+      3. "Entretenimiento": 8 medias
+   ✅ Verificación exitosa: Se encontraron 100 medias total
+```
+
+### 🎯 Qué Valida Cada Test
+- **Estructura de respuesta**: JSON válido con `{status: "OK", data: []}`
+- **Tipos de datos**: Strings, numbers, arrays, booleans según esperado
+- **Lógica de filtros**: Que cada parámetro funcione como se espera
+- **Casos edge**: Datos vacíos, límites, combinaciones complejas
 
 ## 📊 Reportes
 
