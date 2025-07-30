@@ -1,0 +1,90 @@
+name: 🧪 Run Tests and Publish Reports
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  schedule:
+    - cron: '0 6 * * *'  # Ejecución diaria a las 6 AM UTC
+  workflow_dispatch:
+
+jobs:
+  test-and-publish:
+    runs-on: ubuntu-latest
+    
+    permissions:
+      contents: write
+      pages: write
+      id-token: write
+    
+    steps:
+    - name: 📂 Checkout repository
+      uses: actions/checkout@v4
+
+    - name: ⚙️ Configure Git
+      run: |
+        git config --global user.name 'github-actions[bot]'
+        git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+
+    - name: 🟢 Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+
+    - name: 📦 Install dependencies
+      run: npm ci
+
+    - name: 🎭 Install Playwright browsers
+      run: npx playwright install
+
+    - name: 🧪 Run tests
+      run: npx playwright test
+      env:
+        API_BASE_URL: ${{ secrets.API_BASE_URL }}
+        API_TOKEN: ${{ secrets.API_TOKEN }}
+
+    - name: 📅 Generate timestamp
+      id: timestamp
+      run: echo "date=$(date -u '+%Y-%m-%d %H:%M:%S UTC')" >> $GITHUB_OUTPUT
+
+    - name: 🚀 Deploy to GitHub Pages
+      uses: peaceiris/actions-gh-pages@v3
+      if: github.ref == 'refs/heads/main'
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: ./test-results/html-report
+        publish_branch: gh-pages
+        force_orphan: true
+        user_name: 'github-actions[bot]'
+        user_email: 'github-actions[bot]@users.noreply.github.com'
+        
+    - name: 📤 Send Slack notification
+      if: always()
+      uses: 8398a7/action-slack@v3
+      with:
+        status: ${{ job.status }}
+        custom_payload: |
+          {
+            "text": "${{ job.status == 'success' && '✅ Endpoint Sentinel - Tests EXITOSOS' || '❌ Endpoint Sentinel - Tests FALLARON' }}",
+            "attachments": [
+              {
+                "color": "${{ job.status == 'success' && 'good' || 'danger' }}",
+                "fields": [
+                  {
+                    "title": "📊 Resultados de Ejecución",
+                    "value": "Estado: ${{ job.status }}\nFecha: ${{ steps.timestamp.outputs.date }}\nTotal de casos: 30 tests",
+                    "short": false
+                  },
+                  {
+                    "title": "🔗 Enlaces",
+                    "value": "<https://faradayy7.github.io/endpoint-sentinel/|📋 Ver Reportes>",
+                    "short": false
+                  }
+                ]
+              }
+            ]
+          }
+      env:
+        SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
