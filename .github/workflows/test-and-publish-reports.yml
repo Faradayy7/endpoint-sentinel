@@ -57,66 +57,41 @@ jobs:
         
     - name: 📋 Prepare reports directory
       run: |
-        mkdir -p docs/reports
+        # Crear directorio de reportes
+        New-Item -ItemType Directory -Force -Path "docs/reports"
+        
         # Copiar reporte HTML principal (desde test-results/html-report)
-        if [ -d "test-results/html-report" ]; then
-          cp -r test-results/html-report/* docs/reports/
-        fi
+        if (Test-Path "test-results/html-report") {
+          Copy-Item -Path "test-results/html-report/*" -Destination "docs/reports/" -Recurse -Force
+          Write-Host "✅ HTML report copied successfully"
+        } else {
+          Write-Host "⚠️ HTML report not found at test-results/html-report"
+        }
         
         # Copiar resultados JSON
-        if [ -f "test-results/test-results.json" ]; then
-          cp test-results/test-results.json docs/reports/
-        fi
+        if (Test-Path "test-results/test-results.json") {
+          Copy-Item -Path "test-results/test-results.json" -Destination "docs/reports/" -Force
+          Write-Host "✅ JSON results copied successfully"
+        } else {
+          Write-Host "⚠️ JSON results not found at test-results/test-results.json"
+        }
         
-        # Crear index principal con lista de reportes
-        cat > docs/index.html << 'EOF'
-        <!DOCTYPE html>
-        <html>
-        <head>
-            <title>Endpoint Sentinel - Test Reports</title>
-            <style>
-                body { font-family: Arial, sans-serif; margin: 40px; background: #f5f5f5; }
-                .container { max-width: 800px; margin: 0 auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-                h1 { color: #2c3e50; border-bottom: 3px solid #3498db; padding-bottom: 10px; }
-                .report-card { background: #ecf0f1; padding: 20px; margin: 20px 0; border-radius: 6px; border-left: 4px solid #3498db; }
-                .report-card h3 { margin-top: 0; color: #2c3e50; }
-                .btn { display: inline-block; padding: 10px 20px; background: #3498db; color: white; text-decoration: none; border-radius: 4px; margin: 5px; }
-                .btn:hover { background: #2980b9; }
-                .timestamp { color: #7f8c8d; font-size: 0.9em; }
-            </style>
-        </head>
-        <body>
-            <div class="container">
-                <h1>🛡️ Endpoint Sentinel - Test Reports</h1>
-                
-                <div class="report-card">
-                    <h3>📊 Latest Test Execution</h3>
-                    <p class="timestamp">Generated: ${{ steps.timestamp.outputs.date }}</p>
-                    <p>Complete test suite execution with detailed analytics and validations.</p>
-                    <a href="reports/index.html" class="btn">📋 View HTML Report</a>
-                    <a href="reports/test-results.json" class="btn">📄 Download JSON Results</a>
-                </div>
-                
-                <div class="report-card">
-                    <h3>🎯 Test Coverage</h3>
-                    <ul>
-                        <li>✅ 21 comprehensive test cases</li>
-                        <li>🔍 Real data validation</li>
-                        <li>📊 Advanced analytics and logging</li>
-                        <li>🏷️ Category and publication status filtering</li>
-                        <li>⚡ Performance optimized execution</li>
-                    </ul>
-                </div>
-                
-                <div class="report-card">
-                    <h3>🔗 Quick Links</h3>
-                    <a href="https://github.com/Faradayy7/endpoint-sentinel" class="btn">📂 View Repository</a>
-                    <a href="https://github.com/Faradayy7/endpoint-sentinel/actions" class="btn">🔄 View Actions</a>
-                </div>
-            </div>
-        </body>
-        </html>
-        EOF
+        # Listar contenido para debug
+        Write-Host "📁 Contents of docs/reports:"
+        Get-ChildItem -Path "docs/reports" -Recurse | Format-Table Name, Length, LastWriteTime
+      shell: pwsh
+        
+        Write-Host "✅ All reports prepared successfully"
+        
+    - name: 📄 Create dashboard HTML
+      run: |
+        # Copiar template y reemplazar placeholder
+        Copy-Item -Path "dashboard-template.html" -Destination "docs/index.html" -Force
+        $content = Get-Content "docs/index.html" -Raw
+        $content = $content -replace "TIMESTAMP_PLACEHOLDER", "${{ steps.timestamp.outputs.date }}"
+        $content | Out-File "docs/index.html" -Encoding UTF8 -NoNewline
+        Write-Host "✅ Dashboard HTML created"
+      shell: pwsh
         
     - name: 🚀 Deploy to GitHub Pages
       uses: peaceiris/actions-gh-pages@v3
@@ -129,27 +104,66 @@ jobs:
         user_name: 'github-actions[bot]'
         user_email: 'github-actions[bot]@users.noreply.github.com'
         
-    - name: 📤 Send Slack notification
-      if: always()
+    - name: 📤 Send Slack notification - Success
+      if: success()
       uses: 8398a7/action-slack@v3
       with:
-        status: ${{ job.status }}
+        status: custom
         custom_payload: |
           {
-            "text": "🧪 Endpoint Sentinel Test Results",
+            "text": "✅ Endpoint Sentinel - Tests EXITOSOS",
             "attachments": [
               {
-                "color": "${{ job.status == 'success' && 'good' || job.status == 'failure' && 'danger' || 'warning' }}",
+                "color": "good",
                 "fields": [
                   {
-                    "title": "📊 Test Execution",
-                    "value": "Status: ${{ job.status }}\nTimestamp: ${{ steps.timestamp.outputs.date }}",
+                    "title": "🎯 Resultados de Ejecución",
+                    "value": "Estado: ✅ TODOS LOS TESTS PASARON\nFecha: ${{ steps.timestamp.outputs.date }}\nTotal de casos: 30 (21 principales + 9 smoke tests)",
                     "short": false
                   },
                   {
-                    "title": "🔗 Quick Access",
-                    "value": "<https://faradayy7.github.io/endpoint-sentinel/|📋 View Report> | <https://faradayy7.github.io/endpoint-sentinel/reports/test-results.json|📄 Download JSON>",
+                    "title": "🔗 Enlaces Importantes",
+                    "value": "• <https://faradayy7.github.io/endpoint-sentinel/|📊 Ver Dashboard Completo>\n• <https://faradayy7.github.io/endpoint-sentinel/reports/index.html|📋 Reporte HTML Detallado>\n• <https://faradayy7.github.io/endpoint-sentinel/reports/test-results.json|📄 Descargar JSON>",
                     "short": false
+                  },
+                  {
+                    "title": "📈 Información Técnica",
+                    "value": "• Endpoint: /api/media\n• Autenticación: ✅ Validada\n• Paginación: ✅ Funcionando\n• Filtros: ✅ Operativos",
+                    "short": true
+                  }
+                ]
+              }
+            ]
+          }
+      env:
+        SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+    - name: 📤 Send Slack notification - Failure
+      if: failure()
+      uses: 8398a7/action-slack@v3
+      with:
+        status: custom
+        custom_payload: |
+          {
+            "text": "❌ Endpoint Sentinel - Tests FALLARON",
+            "attachments": [
+              {
+                "color": "danger",
+                "fields": [
+                  {
+                    "title": "⚠️ Resultados de Ejecución",
+                    "value": "Estado: ❌ TESTS FALLARON\nFecha: ${{ steps.timestamp.outputs.date }}\nRevisión necesaria en el endpoint /api/media",
+                    "short": false
+                  },
+                  {
+                    "title": "🔗 Enlaces para Diagnóstico",
+                    "value": "• <https://github.com/Faradayy7/endpoint-sentinel/actions|🔄 Ver Action que Falló>\n• <https://faradayy7.github.io/endpoint-sentinel/|� Ver Dashboard>\n• <https://faradayy7.github.io/endpoint-sentinel/reports/index.html|📋 Reporte Detallado>",
+                    "short": false
+                  },
+                  {
+                    "title": "🚨 Acción Requerida",
+                    "value": "1. Revisar logs del Action\n2. Verificar endpoint /api/media\n3. Comprobar autenticación\n4. Validar parámetros API",
+                    "short": true
                   }
                 ]
               }
