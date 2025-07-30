@@ -45,7 +45,15 @@ jobs:
         API_BASE_URL: ${{ secrets.API_BASE_URL }}
         API_TOKEN: ${{ secrets.API_TOKEN }}
 
-    - name: 📅 Generate timestamp
+    - name: � Verify test reports generated
+      run: |
+        echo "📁 Checking test results directory..."
+        ls -la test-results/
+        echo "📄 Checking HTML report directory..."
+        ls -la test-results/html-report/
+        echo "✅ Verification completed"
+
+    - name: �📅 Generate timestamp
       id: timestamp
       run: echo "date=$(date -u '+%Y-%m-%d %H:%M:%S UTC')" >> $GITHUB_OUTPUT
 
@@ -59,6 +67,15 @@ jobs:
         force_orphan: true
         user_name: 'github-actions[bot]'
         user_email: 'github-actions[bot]@users.noreply.github.com'
+        cname: false
+        
+    - name: 📤 Upload test results as artifact
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: test-results
+        path: test-results/
+        retention-days: 30
         
     - name: 📤 Send Slack notification
       if: always()
