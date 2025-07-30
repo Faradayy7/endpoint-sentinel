@@ -58,9 +58,9 @@ jobs:
     - name: 📋 Prepare reports directory
       run: |
         mkdir -p docs/reports
-        # Copiar reporte HTML principal
-        if [ -f "playwright-report/index.html" ]; then
-          cp -r playwright-report/* docs/reports/
+        # Copiar reporte HTML principal (desde test-results/html-report)
+        if [ -d "test-results/html-report" ]; then
+          cp -r test-results/html-report/* docs/reports/
         fi
         
         # Copiar resultados JSON
