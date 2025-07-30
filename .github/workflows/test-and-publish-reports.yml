@@ -10,6 +10,7 @@ on:
     - cron: '0 9 * * *'
   workflow_dispatch: # Permite ejecutar manualmente
 
+# Permisos necesarios para GitHub Pages y commits
 permissions:
   contents: write
   pages: write
@@ -22,6 +23,11 @@ jobs:
     steps:
     - name: 📥 Checkout repository
       uses: actions/checkout@v4
+      
+    - name: ⚙️ Configure Git
+      run: |
+        git config --global user.name "github-actions[bot]"
+        git config --global user.email "github-actions[bot]@users.noreply.github.com"
       
     - name: 🟢 Setup Node.js
       uses: actions/setup-node@v4
@@ -112,12 +118,7 @@ jobs:
         </html>
         EOF
         
-    - name: � Configure Git
-      run: |
-        git config --global user.name "github-actions[bot]"
-        git config --global user.email "github-actions[bot]@users.noreply.github.com"
-        
-    - name: �🚀 Deploy to GitHub Pages
+    - name: 🚀 Deploy to GitHub Pages
       uses: peaceiris/actions-gh-pages@v3
       if: github.ref == 'refs/heads/main'
       with:
@@ -125,6 +126,8 @@ jobs:
         publish_dir: ./docs
         publish_branch: gh-pages
         force_orphan: true
+        user_name: 'github-actions[bot]'
+        user_email: 'github-actions[bot]@users.noreply.github.com'
         
     - name: 📤 Send Slack notification
       if: always()
