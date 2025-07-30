@@ -75,11 +75,11 @@ jobs:
         path: playwright-report/
         retention-days: 30
 
-    - name: 📤 Send Slack notification
+    - name: 📤 Send Slack notification (custom only)
       if: always()
       uses: 8398a7/action-slack@v3
       with:
-        status: ${{ job.status }}
+        args: payload
         custom_payload: |
           {
             "text": "${{ job.status == 'success' && '🛡️ Endpoint Sentinel - Tests EXITOSOS' || ':squirrel: Endpoint Sentinel - Tests FALLARON' }}",
