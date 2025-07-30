@@ -67,19 +67,19 @@ jobs:
         status: ${{ job.status }}
         custom_payload: |
           {
-            "text": "${{ job.status == 'success' && '✅ Endpoint Sentinel - Tests EXITOSOS' || '❌ Endpoint Sentinel - Tests FALLARON' }}",
+            "text": "${{ job.status == 'success' && '🛡️ Endpoint Sentinel - Tests EXITOSOS' || ':squirrel: Endpoint Sentinel - Tests FALLARON' }}",
             "attachments": [
               {
                 "color": "${{ job.status == 'success' && 'good' || 'danger' }}",
                 "fields": [
                   {
-                    "title": "📊 Resultados de Ejecución",
-                    "value": "Estado: ${{ job.status }}\nFecha: ${{ steps.timestamp.outputs.date }}\nTotal de casos: 30 tests",
+                    "title": "${{ job.status == 'success' && '✅ Resultados de Ejecución' || '⚠️ Resultados de Ejecución' }}",
+                    "value": "${{ job.status == 'success' && '🎯 Estado: TODOS LOS TESTS PASARON' || '💥 Estado: TESTS FALLARON' }}\n📅 Fecha: ${{ steps.timestamp.outputs.date }}\n🧪 Total de casos: 30 tests\n🔗 Endpoint: /api/media",
                     "short": false
                   },
                   {
-                    "title": "🔗 Enlaces",
-                    "value": "<https://faradayy7.github.io/endpoint-sentinel/|📋 Ver Reportes>",
+                    "title": "${{ job.status == 'success' && '🔗 Enlaces de Reportes' || '🚨 Enlaces de Diagnóstico' }}",
+                    "value": "${{ job.status == 'success' && '• <https://faradayy7.github.io/endpoint-sentinel/|🛡️ Ver Dashboard Completo>\n• <https://github.com/Faradayy7/endpoint-sentinel/actions|� Ver Actions>' || '• <https://faradayy7.github.io/endpoint-sentinel/|:squirrel: Ver Dashboard>\n• <https://github.com/Faradayy7/endpoint-sentinel/actions|🔄 Ver Action que Falló>\n• Revisa logs para diagnosticar el problema' }}",
                     "short": false
                   }
                 ]
