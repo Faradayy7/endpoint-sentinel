@@ -10,6 +10,11 @@ on:
     - cron: '0 9 * * *'
   workflow_dispatch: # Permite ejecutar manualmente
 
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
 jobs:
   test-and-publish:
     runs-on: ubuntu-latest
@@ -107,12 +112,19 @@ jobs:
         </html>
         EOF
         
-    - name: 🚀 Deploy to GitHub Pages
+    - name: � Configure Git
+      run: |
+        git config --global user.name "github-actions[bot]"
+        git config --global user.email "github-actions[bot]@users.noreply.github.com"
+        
+    - name: �🚀 Deploy to GitHub Pages
       uses: peaceiris/actions-gh-pages@v3
       if: github.ref == 'refs/heads/main'
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
         publish_dir: ./docs
+        publish_branch: gh-pages
+        force_orphan: true
         
     - name: 📤 Send Slack notification
       if: always()
