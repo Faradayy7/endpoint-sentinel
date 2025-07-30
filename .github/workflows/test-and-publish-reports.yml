@@ -58,40 +58,36 @@ jobs:
     - name: 📋 Prepare reports directory
       run: |
         # Crear directorio de reportes
-        New-Item -ItemType Directory -Force -Path "docs/reports"
+        mkdir -p docs/reports
         
         # Copiar reporte HTML principal (desde test-results/html-report)
-        if (Test-Path "test-results/html-report") {
-          Copy-Item -Path "test-results/html-report/*" -Destination "docs/reports/" -Recurse -Force
-          Write-Host "✅ HTML report copied successfully"
-        } else {
-          Write-Host "⚠️ HTML report not found at test-results/html-report"
-        }
+        if [ -d "test-results/html-report" ]; then
+          cp -r test-results/html-report/* docs/reports/
+          echo "✅ HTML report copied successfully"
+        else
+          echo "⚠️ HTML report not found at test-results/html-report"
+        fi
         
         # Copiar resultados JSON
-        if (Test-Path "test-results/test-results.json") {
-          Copy-Item -Path "test-results/test-results.json" -Destination "docs/reports/" -Force
-          Write-Host "✅ JSON results copied successfully"
-        } else {
-          Write-Host "⚠️ JSON results not found at test-results/test-results.json"
-        }
+        if [ -f "test-results/test-results.json" ]; then
+          cp test-results/test-results.json docs/reports/
+          echo "✅ JSON results copied successfully"
+        else
+          echo "⚠️ JSON results not found at test-results/test-results.json"
+        fi
         
         # Listar contenido para debug
-        Write-Host "📁 Contents of docs/reports:"
-        Get-ChildItem -Path "docs/reports" -Recurse | Format-Table Name, Length, LastWriteTime
-      shell: pwsh
+        echo "📁 Contents of docs/reports:"
+        ls -la docs/reports/
         
         Write-Host "✅ All reports prepared successfully"
         
     - name: 📄 Create dashboard HTML
       run: |
         # Copiar template y reemplazar placeholder
-        Copy-Item -Path "dashboard-template.html" -Destination "docs/index.html" -Force
-        $content = Get-Content "docs/index.html" -Raw
-        $content = $content -replace "TIMESTAMP_PLACEHOLDER", "${{ steps.timestamp.outputs.date }}"
-        $content | Out-File "docs/index.html" -Encoding UTF8 -NoNewline
-        Write-Host "✅ Dashboard HTML created"
-      shell: pwsh
+        cp dashboard-template.html docs/index.html
+        sed -i "s/TIMESTAMP_PLACEHOLDER/${{ steps.timestamp.outputs.date }}/g" docs/index.html
+        echo "✅ Dashboard HTML created"
         
     - name: 🚀 Deploy to GitHub Pages
       uses: peaceiris/actions-gh-pages@v3
