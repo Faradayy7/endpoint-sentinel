@@ -55,6 +55,18 @@ jobs:
       id: timestamp
       run: echo "date=$(date -u '+%Y-%m-%d %H:%M:%S UTC')" >> $GITHUB_OUTPUT
 
+    - name: 📊 Extract test summary
+      id: test_summary
+      run: |
+        # Buscar en el reporte HTML o JSON (si activaste JSON reporter)
+        passed=$(grep -oP '(?<=<span class="passed">)[0-9]+' playwright-report/index.html | head -1 || echo "0")
+        failed=$(grep -oP '(?<=<span class="failed">)[0-9]+' playwright-report/index.html | head -1 || echo "0")
+        skipped=$(grep -oP '(?<=<span class="skipped">)[0-9]+' playwright-report/index.html | head -1 || echo "0")
+        echo "passed=$passed" >> $GITHUB_OUTPUT
+        echo "failed=$failed" >> $GITHUB_OUTPUT
+        echo "skipped=$skipped" >> $GITHUB_OUTPUT
+        echo "📊 Test Summary: Passed=$passed, Failed=$failed, Skipped=$skipped"
+
     - name: 🚀 Deploy to GitHub Pages
       uses: peaceiris/actions-gh-pages@v3
       if: github.ref == 'refs/heads/main'
@@ -75,27 +87,48 @@ jobs:
         path: playwright-report/
         retention-days: 30
 
-    - name: 📤 Send Slack notification (custom only)
+    - name: 📤 Send Slack notification (custom report)
       if: always()
       uses: 8398a7/action-slack@v3
       with:
-        args: payload
+        status: ${{ job.status }}
+        author_name: ''      # Desactiva autor para evitar duplicados
+        text: ''             # Evita mensaje por defecto
+        fields: ''           # Desactiva campos estándar
         custom_payload: |
           {
             "text": "${{ job.status == 'success' && '🛡️ Endpoint Sentinel - Tests EXITOSOS' || ':squirrel: Endpoint Sentinel - Tests FALLARON' }}",
             "attachments": [
               {
                 "color": "${{ job.status == 'success' && 'good' || 'danger' }}",
-                "fields": [
+                "blocks": [
                   {
-                    "title": "${{ job.status == 'success' && '✅ Resultados de Ejecución' || '⚠️ Resultados de Ejecución' }}",
-                    "value": "${{ job.status == 'success' && '🎯 Estado: TODOS LOS TESTS PASARON' || '💥 Estado: TESTS FALLARON' }}\n📅 Fecha: ${{ steps.timestamp.outputs.date }}\n🧪 Total de casos: 30 tests\n🔗 Endpoint: /api/media",
-                    "short": false
+                    "type": "section",
+                    "text": {
+                      "type": "mrkdwn",
+                      "text": "${{ job.status == 'success' && '🎯 *Estado:* TODOS LOS TESTS PASARON' || '💥 *Estado:* TESTS FALLARON' }}\n📅 *Fecha:* ${{ steps.timestamp.outputs.date }}\n🧪 *Resultados:* Passed: ${{ steps.test_summary.outputs.passed }} | Failed: ${{ steps.test_summary.outputs.failed }} | Skipped: ${{ steps.test_summary.outputs.skipped }}\n🔗 *Endpoint:* /api/media"
+                    }
                   },
                   {
-                    "title": "${{ job.status == 'success' && '🔗 Enlaces de Reportes' || '🚨 Enlaces de Diagnóstico' }}",
-                    "value": "${{ job.status == 'success' && '• <https://faradayy7.github.io/endpoint-sentinel/|🛡️ Ver Dashboard Completo>\n• <https://github.com/Faradayy7/endpoint-sentinel/actions|🔍 Ver Actions>' || '• <https://faradayy7.github.io/endpoint-sentinel/|:squirrel: Ver Dashboard>\n• <https://github.com/Faradayy7/endpoint-sentinel/actions|🔄 Ver Action que Falló>\n• Revisa logs para diagnosticar el problema' }}",
-                    "short": false
+                    "type": "actions",
+                    "elements": [
+                      {
+                        "type": "button",
+                        "text": {
+                          "type": "plain_text",
+                          "text": "📊 Ver Reporte HTML"
+                        },
+                        "url": "https://faradayy7.github.io/endpoint-sentinel/"
+                      },
+                      {
+                        "type": "button",
+                        "text": {
+                          "type": "plain_text",
+                          "text": "🔍 Ver Workflow"
+                        },
+                        "url": "https://github.com/Faradayy7/endpoint-sentinel/actions"
+                      }
+                    ]
                   }
                 ]
               }
