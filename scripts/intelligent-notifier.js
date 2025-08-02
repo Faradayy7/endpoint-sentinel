@@ -382,7 +382,10 @@ class IntelligentSlackNotifier {
       
     } catch (error) {
       console.error('💥 Error en el proceso:', error.message);
-      process.exit(1);
+      console.error('📍 Stack trace:', error.stack);
+      console.log('⚠️ La notificación falló pero el proceso continuará');
+      // No hacer process.exit(1) para evitar que falle todo el workflow
+      return false;
     }
   }
 }

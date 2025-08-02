@@ -93,6 +93,9 @@ jobs:
 
     - name: 🔔 Send Slack notification (Intelligent)
       if: always()
-      run: node scripts/intelligent-notifier.js
+      continue-on-error: true
+      run: |
+        echo "🚀 Enviando notificación Slack..."
+        node scripts/intelligent-notifier.js || echo "⚠️ Notificación falló pero continuamos"
       env:
         SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
