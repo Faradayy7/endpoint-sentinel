@@ -40,7 +40,7 @@ jobs:
       run: npx playwright install
 
     - name: 🧪 Run tests
-      run: npx playwright test --reporter=html
+      run: npx playwright test --reporter=html,json
       env:
         API_BASE_URL: ${{ secrets.API_BASE_URL }}
         API_TOKEN: ${{ secrets.API_TOKEN }}
@@ -49,7 +49,11 @@ jobs:
       run: |
         echo "📁 Checking report directory..."
         ls -la playwright-report/
+        echo "📊 Checking test-results directory..."
+        ls -la test-results/
         echo "✅ Verification completed"
+        echo "📈 Report files found:"
+        find playwright-report -name "*.html" -o -name "*.json" | head -5
 
     - name: 📅 Generate timestamp
       id: timestamp
