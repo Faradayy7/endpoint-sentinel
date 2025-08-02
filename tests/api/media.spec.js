@@ -41,11 +41,11 @@ test.describe('Media API - Pruebas Completas', () => {
     });
 
     // Verificar status code
-    expect(response.status()).toBe(200);
-    expect(test.apiClient.isSuccessResponse(response)).toBe(true);
+    expect(response.status).toBe(200);
+    expect(response.ok).toBe(true);
 
     // Verificar contenido y procesar datos
-    const responseData = await test.apiClient.validateAndExtractJson(response);
+    const responseData = response.data;
     expect(responseData).toBeDefined();
     expect(responseData.status).toBe('OK');
     expect(responseData.data).toBeDefined();
@@ -76,9 +76,9 @@ test.describe('Media API - Pruebas Completas', () => {
       params: { id: testId },
     });
 
-    expect(response.status()).toBe(200);
+    expect(response.status).toBe(200);
     
-    const responseData = await test.apiClient.validateAndExtractJson(response);
+    const responseData = response.data;
     expect(responseData.status).toBe('OK');
     const data = responseData.data;
     
@@ -100,9 +100,9 @@ test.describe('Media API - Pruebas Completas', () => {
       params: { ...basicParams, limit: 1 },
     });
 
-    expect(response.status()).toBe(200);
+    expect(response.status).toBe(200);
     
-    const responseData = await test.apiClient.validateAndExtractJson(response);
+    const responseData = response.data;
     
     // Verificar estructura principal
     expect(responseData).toHaveProperty('status');
@@ -159,9 +159,9 @@ test.describe('Media API - Pruebas Completas', () => {
       params: paginationTests.firstPage,
     });
 
-    expect(response.status()).toBe(200);
+    expect(response.status).toBe(200);
     
-    const responseData = await test.apiClient.validateAndExtractJson(response);
+    const responseData = response.data;
     const data = responseData.data;
     
     // Si es un array, verificar que respeta el límite
@@ -187,9 +187,9 @@ test.describe('Media API - Pruebas Completas', () => {
       },
     });
 
-    expect(response.status()).toBe(200);
+    expect(response.status).toBe(200);
     
-    const data = await test.apiClient.validateAndExtractJson(response);
+    const data = response.data;
     expect(data).toBeDefined();
     
     // Verificar que los resultados contienen la palabra buscada (si retorna array)
@@ -219,9 +219,9 @@ test.describe('Media API - Pruebas Completas', () => {
       },
     });
 
-    expect(response.status()).toBe(200);
+    expect(response.status).toBe(200);
     
-    const data = await test.apiClient.validateAndExtractJson(response);
+    const data = response.data;
     expect(data).toBeDefined();
     
     // Verificar que encontramos el título exacto
@@ -252,9 +252,9 @@ test.describe('Media API - Pruebas Completas', () => {
       },
     });
 
-    expect(response.status()).toBe(200);
+    expect(response.status).toBe(200);
     
-    const data = await test.apiClient.validateAndExtractJson(response);
+    const data = response.data;
     expect(data).toBeDefined();
     
     // Verificar que los resultados contienen la palabra en el título
@@ -283,9 +283,9 @@ test.describe('Media API - Pruebas Completas', () => {
       },
     });
 
-    expect(response.status()).toBe(200);
+    expect(response.status).toBe(200);
     
-    const data = await test.apiClient.validateAndExtractJson(response);
+    const data = response.data;
     expect(data).toBeDefined();
     
     // Verificar que los resultados están dentro del rango
@@ -315,9 +315,9 @@ test.describe('Media API - Pruebas Completas', () => {
       },
     });
 
-    expect(response.status()).toBe(200);
+    expect(response.status).toBe(200);
     
-    const data = await test.apiClient.validateAndExtractJson(response);
+    const data = response.data;
     expect(data).toBeDefined();
     
     // Verificar que los resultados cumplen el mínimo de vistas
@@ -341,9 +341,9 @@ test.describe('Media API - Pruebas Completas', () => {
       },
     });
 
-    expect(response.status()).toBe(200);
+    expect(response.status).toBe(200);
     
-    const data = await test.apiClient.validateAndExtractJson(response);
+    const data = response.data;
     expect(data).toBeDefined();
     
     // Verificar que los resultados son del tipo correcto
@@ -371,9 +371,9 @@ test.describe('Media API - Pruebas Completas', () => {
       },
     });
 
-    expect(response.status()).toBe(200);
+    expect(response.status).toBe(200);
     
-    const data = await test.apiClient.validateAndExtractJson(response);
+    const data = response.data;
     expect(data).toBeDefined();
     
     // Verificar que los resultados están en el rango de fechas
@@ -402,7 +402,7 @@ test.describe('Media API - Pruebas Completas', () => {
       const response = await test.apiClient.get(config.mediaApi.endpoint, {
         params: { ...basicParams, ...dateFilters.createdAfter },
       });
-      expect(response.status()).toBe(200);
+      expect(response.status).toBe(200);
       logger.info('Filtro por fecha con parámetros fijos aplicado');
       return;
     }
@@ -414,9 +414,9 @@ test.describe('Media API - Pruebas Completas', () => {
       },
     });
 
-    expect(response.status()).toBe(200);
+    expect(response.status).toBe(200);
     
-    const data = await test.apiClient.validateAndExtractJson(response);
+    const data = response.data;
     expect(data).toBeDefined();
     
     logger.info(`✅ Filtro por fecha posterior a: ${dateInfo.createdAfter}`);
@@ -427,9 +427,9 @@ test.describe('Media API - Pruebas Completas', () => {
       params: { ...basicParams, ...sortingOptions.dateCreatedDesc },
     });
 
-    expect(response.status()).toBe(200);
+    expect(response.status).toBe(200);
     
-    const data = await test.apiClient.validateAndExtractJson(response);
+    const data = response.data;
     expect(data).toBeDefined();
     
     // Verificar ordenamiento si es un array
@@ -455,9 +455,9 @@ test.describe('Media API - Pruebas Completas', () => {
       params: { ...basicParams, ...paginationTests.secondPage },
     });
 
-    expect(response.status()).toBe(200);
+    expect(response.status).toBe(200);
     
-    const data = await test.apiClient.validateAndExtractJson(response);
+    const data = response.data;
     expect(data).toBeDefined();
     
     // Verificar que respeta el límite
@@ -474,9 +474,9 @@ test.describe('Media API - Pruebas Completas', () => {
       params: { ...basicParams, count: true, limit: 5 },
     });
 
-    expect(response.status()).toBe(200);
+    expect(response.status).toBe(200);
     
-    const data = await test.apiClient.validateAndExtractJson(response);
+    const data = response.data;
     expect(data).toBeDefined();
     
     // Verificar si incluye información de count/total
@@ -511,9 +511,9 @@ test.describe('Media API - Pruebas Completas', () => {
       },
     });
 
-    expect(response.status()).toBe(200);
+    expect(response.status).toBe(200);
     
-    const data = await test.apiClient.validateAndExtractJson(response);
+    const data = response.data;
     expect(data).toBeDefined();
     
     // Verificar que los resultados contienen el tag
@@ -538,9 +538,9 @@ test.describe('Media API - Pruebas Completas', () => {
       },
     });
 
-    expect(response.status()).toBe(200);
+    expect(response.status).toBe(200);
     
-    const responseData = await test.apiClient.validateAndExtractJson(response);
+    const responseData = response.data;
     expect(responseData).toBeDefined();
     expect(responseData.status).toBe('OK');
     expect(responseData.data).toBeDefined();
@@ -614,9 +614,9 @@ test.describe('Media API - Pruebas Completas', () => {
       },
     });
 
-    expect(response.status()).toBe(200);
+    expect(response.status).toBe(200);
     
-    const responseData = await test.apiClient.validateAndExtractJson(response);
+    const responseData = response.data;
     expect(responseData).toBeDefined();
     expect(responseData.status).toBe('OK');
     expect(responseData.data).toBeDefined();
@@ -713,9 +713,9 @@ test.describe('Media API - Pruebas Completas', () => {
       },
     });
 
-    expect(response.status()).toBe(200);
+    expect(response.status).toBe(200);
     
-    const responseData = await test.apiClient.validateAndExtractJson(response);
+    const responseData = response.data;
     expect(responseData).toBeDefined();
     expect(responseData.status).toBe('OK');
     expect(responseData.data).toBeDefined();
@@ -799,9 +799,9 @@ test.describe('Media API - Pruebas Completas', () => {
       params: { limit: 1 }
     });
 
-    expect(response.status()).toBe(200);
+    expect(response.status).toBe(200);
     
-    const responseData = await test.apiClient.validateAndExtractJson(response);
+    const responseData = response.data;
     expect(responseData.status).toBe('OK');
     
     if (responseData.data.length > 0) {
@@ -918,9 +918,9 @@ test.describe('Media API - Pruebas Completas', () => {
       params,
     });
 
-    expect(response.status()).toBe(200);
+    expect(response.status).toBe(200);
     
-    const responseData = await test.apiClient.validateAndExtractJson(response);
+    const responseData = response.data;
     expect(responseData.status).toBe('OK');
     const data = responseData.data;
     
