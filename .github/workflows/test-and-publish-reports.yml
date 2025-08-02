@@ -87,8 +87,8 @@ jobs:
         path: playwright-report/
         retention-days: 30
 
-    - name: � Send Slack notification (via script)
+    - name: 🔔 Send Slack notification (Intelligent)
       if: always()
-      run: node scripts/slack-notifier.js
+      run: node scripts/intelligent-notifier.js
       env:
         SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
