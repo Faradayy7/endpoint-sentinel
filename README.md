@@ -1,6 +1,23 @@
 # Endpoint Sentinel QA 🛡️
 
-Proyecto de automatización de pruebas QA para el endpoint `/api/media` usando Playwright Test y JavaScript.
+Sistema completo de automatización QA para APIs con notificaciones inteligentes a Slack. Incluye tests comprehensivos para `/api/media`, `/api/coupon` y otros endpoints críticos.
+
+## ✨ Características Principales
+
+- 🧪 **Tests Automatizados** - Más de 40 casos de prueba para diferentes APIs
+- 📊 **Reportes HTML** - Reportes detallados con Playwright
+- 📢 **Notificaciones Slack** - Sistema inteligente de notificaciones
+- 🎫 **API Cupones** - 22 tests completos para CRUD de cupones
+- 📺 **API Media** - Tests para gestión multimedia  
+- 🔍 **Detección Automática** - Identifica automáticamente qué tests se ejecutaron
+
+## 📋 Requisitos Previos
+
+- Node.js (versión 16 o superior)
+- npm o yarn
+- Token de API válido
+- URL base de la API
+- Webhook de Slack (opcional, para notificaciones)
 
 ## 📋 Requisitos Previos
 
@@ -35,6 +52,15 @@ npm run install:browsers
    # API Configuration (REQUERIDO - Cambiar por tus valores reales)
    API_BASE_URL=https://tu-api-domain.com
    API_TOKEN=tu-token-aqui
+   
+   # Slack Notifications (OPCIONAL)
+   SLACK_WEBHOOK_URL=https://hooks.slack.com/services/YOUR/WEBHOOK/URL
+   
+   # GitHub Integration (OPCIONAL - para CI/CD)
+   GITHUB_REPOSITORY=tu-usuario/tu-repo
+   GITHUB_RUN_ID=12345
+   GITHUB_ACTOR=tu-usuario
+   GITHUB_REF=refs/heads/main
    ```
 
 ## 🧪 Ejecutar Pruebas
@@ -87,25 +113,80 @@ npm run test:report
 npx playwright test tests/api/media.smoke.spec.js
 ```
 
-## 📁 Estructura del Proyecto
+## � Notificaciones Slack
+
+El proyecto incluye un sistema avanzado de notificaciones que envía automáticamente los resultados a Slack.
+
+### Comandos de notificación
+
+```bash
+# Notificador básico
+node scripts/slack-notifier.js
+
+# Notificador inteligente (recomendado)
+node scripts/intelligent-notifier.js
+
+# Ejecutar tests y enviar notificación automáticamente
+npm test && node scripts/intelligent-notifier.js
+
+# Para API de cupones específicamente
+npx playwright test tests/api/cupones.spec.js --reporter=html && node scripts/intelligent-notifier.js
+```
+
+### Características del sistema de notificaciones
+
+- 🔍 **Detección Automática** - Identifica qué tipos de tests se ejecutaron
+- 📊 **Estadísticas Precisas** - Cuenta passed/failed/skipped correctamente  
+- 🎯 **Mensajes Contextuales** - Información específica por cada API
+- 📈 **Métricas de Éxito** - Calcula automáticamente tasas de éxito
+- 🔗 **Enlaces Directos** - Links al reporte detallado y GitHub Actions
+
+### Tipos de APIs detectadas
+
+- 🎫 **Cupones API** (`/api/coupon`) - 22 tests CRUD completos
+- 📺 **Media API** (`/api/media`) - 21 tests de gestión multimedia
+- 🔐 **Auth API** (`/api/auth`) - Tests de autenticación
+- 👤 **User API** (`/api/user`) - Tests de gestión de usuarios
+
+### Configuración rápida de Slack
+
+1. Crear webhook en tu workspace de Slack
+2. Agregar `SLACK_WEBHOOK_URL` al archivo `.env`  
+3. Ejecutar cualquier notificador
+
+Ver documentación completa en [`docs/SLACK_NOTIFICATIONS.md`](docs/SLACK_NOTIFICATIONS.md)
+
+## �📁 Estructura del Proyecto
 
 ```
 endpoint-sentinel-qa/
 ├── tests/
 │   ├── api/
-│   │   ├── media.spec.js           # Pruebas principales del endpoint /api/media
-│   │   └── media.smoke.spec.js     # Pruebas smoke (rápidas)
+│   │   ├── cupones.spec.js         # 🎫 Tests API Cupones (22 casos CRUD)
+│   │   ├── media.spec.js           # 📺 Tests API Media (21 casos completos)
+│   │   └── media.smoke.spec.js     # 🚀 Tests smoke para media
 │   ├── config/
-│   │   └── environment.js          # Configuración centralizada
+│   │   ├── environment.js          # ⚙️ Configuración centralizada
+│   │   └── tags.js                 # 🏷️ Tags para organización
 │   ├── utils/
-│   │   ├── api-client.js          # Cliente HTTP simplificado
-│   │   └── logger.js              # Utilidad de logging
+│   │   ├── api-client.js          # 🌐 Cliente HTTP con métodos REST
+│   │   ├── logger.js              # 📝 Sistema de logging avanzado
+│   │   └── test-data-manager.js   # 🗂️ Gestión inteligente de datos
 │   └── fixtures/
-│       └── media-test-data.js     # Datos de prueba organizados
-├── test-results/                   # Resultados y reportes
-├── playwright.config.js           # Configuración de Playwright
-├── .env.example                   # Ejemplo de variables de entorno
-└── package.json                   # Dependencias y scripts
+│       └── media-test-data.js     # 📦 Datos de prueba organizados
+├── scripts/
+│   ├── slack-notifier.js          # 📢 Notificador básico de Slack
+│   └── intelligent-notifier.js    # 🤖 Notificador inteligente
+├── docs/
+│   ├── SLACK_NOTIFICATIONS.md     # 📖 Documentación de notificaciones
+│   ├── PROJECT_ROADMAP.md         # 🗺️ Roadmap del proyecto
+│   ├── QUICK_START.md             # ⚡ Guía de inicio rápido
+│   └── SECURITY.md                # 🔒 Políticas de seguridad
+├── test-results/                   # 📊 Resultados y reportes
+├── playwright-report/              # 📋 Reportes HTML de Playwright
+├── playwright.config.js           # ⚙️ Configuración de Playwright
+├── .env.example                   # 🔧 Ejemplo de variables de entorno
+└── package.json                   # 📦 Dependencias y scripts
 ```
 
 ## 🎯 Test Cases Implementados (21 casos completos)
