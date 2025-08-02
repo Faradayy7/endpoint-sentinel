@@ -101,8 +101,8 @@ class SlackNotifier {
       `❌ Failed: ${stats.failed}\n` +
       `⏭️ Skipped: ${stats.skipped}\n` +
       `📈 Total: ${stats.total}\n\n` +
-      `*🎯 Endpoint:* \`/api/media\`\n` +
-      `*📋 Suite:* Media API Tests\n\n` +
+      `*🎯 Endpoint:* \`/api/coupon\`\n` +
+      `*📋 Suite:* Cupones API Tests\n\n` +
       `� <${this.pagesUrl}|Ver Reporte HTML> | <https://github.com/${this.repoName}/actions/runs/${this.runId || ''}|Ver Workflow>`;
 
     return {
@@ -126,8 +126,12 @@ class SlackNotifier {
       return;
     }
 
+    console.log(`🔗 Enviando a: ${this.webhookUrl.substring(0, 50)}...`);
+
     return new Promise((resolve, reject) => {
       const postData = JSON.stringify(payload);
+      
+      console.log(`📦 Tamaño del payload: ${Buffer.byteLength(postData)} bytes`);
       
       const url = new URL(this.webhookUrl);
       const options = {
@@ -138,11 +142,16 @@ class SlackNotifier {
         headers: {
           'Content-Type': 'application/json',
           'Content-Length': Buffer.byteLength(postData)
-        }
+        },
+        timeout: 10000 // 10 segundos de timeout
       };
+
+      console.log(`🌐 Conectando a: ${options.hostname}:${options.port}`);
 
       const req = https.request(options, (res) => {
         let data = '';
+        
+        console.log(`📡 Respuesta HTTP: ${res.statusCode}`);
         
         res.on('data', (chunk) => {
           data += chunk;
@@ -151,6 +160,7 @@ class SlackNotifier {
         res.on('end', () => {
           if (res.statusCode === 200) {
             console.log('✅ Notificación de Slack enviada exitosamente');
+            console.log(`📥 Respuesta: ${data}`);
             resolve(data);
           } else {
             console.error(`❌ Error enviando notificación: ${res.statusCode} - ${data}`);
@@ -161,7 +171,14 @@ class SlackNotifier {
 
       req.on('error', (error) => {
         console.error('❌ Error en la petición a Slack:', error.message);
+        console.error('🔍 Detalles del error:', error);
         reject(error);
+      });
+
+      req.on('timeout', () => {
+        console.error('⏰ Timeout en la petición a Slack');
+        req.destroy();
+        reject(new Error('Timeout en la petición'));
       });
 
       req.write(postData);
