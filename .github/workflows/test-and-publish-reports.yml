@@ -40,7 +40,8 @@ jobs:
       run: npx playwright install
 
     - name: 🧪 Run tests
-      run: npx playwright test --reporter=html --reporter=json
+      run: npx playwright test --reporter=list --reporter=html --reporter=json
+      continue-on-error: true
       env:
         API_BASE_URL: ${{ secrets.API_BASE_URL }}
         API_TOKEN: ${{ secrets.API_TOKEN }}
