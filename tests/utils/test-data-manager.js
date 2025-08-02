@@ -12,6 +12,11 @@ export class TestDataManager {
       availableCategories: [],
       availableTags: [],
       availableTypes: [],
+      // Datos de cupones
+      couponsList: [],
+      availableGroupIds: [],
+      availableCouponCodes: [],
+      sampleCoupon: null,
     };
   }
 
@@ -111,6 +116,67 @@ export class TestDataManager {
   }
 
   /**
+   * Procesa datos de cupones de la API
+   */
+  processCouponsData(apiResponse) {
+    if (!apiResponse) return;
+
+    // Si es un objeto con array de datos
+    if (apiResponse.data && Array.isArray(apiResponse.data)) {
+      this.sharedData.couponsList = apiResponse.data;
+      this.extractDataFromCouponsList(apiResponse.data);
+    }
+    // Si es un array directo
+    else if (Array.isArray(apiResponse)) {
+      this.sharedData.couponsList = apiResponse;
+      this.extractDataFromCouponsList(apiResponse);
+    }
+    // Si es un solo cupón
+    else if (apiResponse._id || apiResponse.id) {
+      this.sharedData.sampleCoupon = apiResponse;
+      this.extractDataFromSingleCoupon(apiResponse);
+    }
+  }
+
+  /**
+   * Extrae datos útiles de una lista de cupones
+   */
+  extractDataFromCouponsList(couponsList) {
+    if (!couponsList || couponsList.length === 0) return;
+
+    // Extraer Group IDs únicos
+    this.sharedData.availableGroupIds = [...new Set(
+      couponsList
+        .map(coupon => coupon.group)
+        .filter(group => group)
+    )];
+
+    // Extraer códigos de cupones únicos
+    this.sharedData.availableCouponCodes = [...new Set(
+      couponsList
+        .map(coupon => coupon.code)
+        .filter(code => code)
+    )];
+
+    // Guardar un cupón de muestra
+    if (couponsList.length > 0) {
+      this.sharedData.sampleCoupon = couponsList[0];
+    }
+  }
+
+  /**
+   * Extrae datos de un solo cupón
+   */
+  extractDataFromSingleCoupon(coupon) {
+    if (coupon.group && !this.sharedData.availableGroupIds.includes(coupon.group)) {
+      this.sharedData.availableGroupIds.push(coupon.group);
+    }
+    if (coupon.code && !this.sharedData.availableCouponCodes.includes(coupon.code)) {
+      this.sharedData.availableCouponCodes.push(coupon.code);
+    }
+  }
+
+  /**
    * Obtiene un ID aleatorio de los disponibles
    */
   getRandomId() {
@@ -152,6 +218,43 @@ export class TestDataManager {
   getAvailableCategory() {
     const categories = this.sharedData.availableCategories;
     return categories.length > 0 ? categories[0] : null;
+  }
+
+  /**
+   * Obtiene un Group ID aleatorio de los cupones disponibles
+   */
+  getRandomGroupId() {
+    const groupIds = this.sharedData.availableGroupIds;
+    return groupIds.length > 0 ? groupIds[Math.floor(Math.random() * groupIds.length)] : null;
+  }
+
+  /**
+   * Obtiene un código de cupón aleatorio de los disponibles
+   */
+  getRandomCouponCode() {
+    const codes = this.sharedData.availableCouponCodes;
+    return codes.length > 0 ? codes[Math.floor(Math.random() * codes.length)] : null;
+  }
+
+  /**
+   * Obtiene el cupón de muestra
+   */
+  getSampleCoupon() {
+    return this.sharedData.sampleCoupon;
+  }
+
+  /**
+   * Obtiene todos los Group IDs disponibles
+   */
+  getAllGroupIds() {
+    return [...this.sharedData.availableGroupIds];
+  }
+
+  /**
+   * Obtiene todos los códigos de cupones disponibles
+   */
+  getAllCouponCodes() {
+    return [...this.sharedData.availableCouponCodes];
   }
 
   /**

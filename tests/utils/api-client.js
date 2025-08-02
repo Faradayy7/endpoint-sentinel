@@ -25,7 +25,7 @@ export class ApiClient {
     const { params = {}, headers = {}, useAuth = true } = options;
     
     const url = this.buildUrl(endpoint, params);
-    const requestHeaders = this.buildHeaders(headers, useAuth);
+    const requestHeaders = this.buildHeaders(headers, useAuth, 'application/json');
 
     this.logger.debug(`GET ${url}`, { headers: requestHeaders, params });
 
@@ -40,11 +40,156 @@ export class ApiClient {
         contentType: response.headers()['content-type'],
       });
 
-      return response;
+      // Procesar respuesta automáticamente
+      const processedResponse = await this.processResponse(response);
+      return processedResponse;
     } catch (error) {
       this.logger.error(`GET request failed for ${url}:`, error.message);
       throw error;
     }
+  }
+
+  /**
+   * Hace una petición POST al endpoint especificado
+   * @param {string} endpoint - Endpoint de la API (ej: '/api/coupon')
+   * @param {Object} data - Datos a enviar en el body
+   * @param {Object} options - Opciones de la petición
+   * @param {Object} options.headers - Headers adicionales
+   * @param {boolean} options.useAuth - Si usar autenticación (default: true)
+   * @param {string} options.contentType - Tipo de contenido (default: 'application/json')
+   */
+  async post(endpoint, data = {}, options = {}) {
+    const { headers = {}, useAuth = true, contentType = 'application/json' } = options;
+    
+    const url = this.buildUrl(endpoint);
+    const requestHeaders = this.buildHeaders(headers, useAuth, contentType);
+
+    this.logger.debug(`POST ${url}`, { headers: requestHeaders, data });
+
+    try {
+      let requestOptions = {
+        headers: requestHeaders,
+        timeout: this.defaultTimeout,
+      };
+
+      // Enviar como form data si es multipart/form-data o application/x-www-form-urlencoded
+      if (contentType === 'application/x-www-form-urlencoded') {
+        requestOptions.form = data;
+      } else if (contentType === 'multipart/form-data') {
+        requestOptions.multipart = data;
+      } else {
+        // JSON por defecto
+        requestOptions.data = data;
+      }
+
+      const response = await this.request.post(url, requestOptions);
+
+      this.logger.debug(`Response: ${response.status()}`, {
+        status: response.status(),
+        contentType: response.headers()['content-type'],
+      });
+
+      // Procesar respuesta automáticamente
+      const processedResponse = await this.processResponse(response);
+      return processedResponse;
+    } catch (error) {
+      this.logger.error(`POST request failed for ${url}:`, error.message);
+      throw error;
+    }
+  }
+
+  /**
+   * Hace una petición PUT al endpoint especificado
+   * @param {string} endpoint - Endpoint de la API (ej: '/api/coupon/123')
+   * @param {Object} data - Datos a enviar en el body
+   * @param {Object} options - Opciones de la petición
+   */
+  async put(endpoint, data = {}, options = {}) {
+    const { headers = {}, useAuth = true, contentType = 'application/json' } = options;
+    
+    const url = this.buildUrl(endpoint);
+    const requestHeaders = this.buildHeaders(headers, useAuth, contentType);
+
+    this.logger.debug(`PUT ${url}`, { headers: requestHeaders, data });
+
+    try {
+      const response = await this.request.put(url, {
+        headers: requestHeaders,
+        data: data,
+        timeout: this.defaultTimeout,
+      });
+
+      this.logger.debug(`Response: ${response.status()}`, {
+        status: response.status(),
+        contentType: response.headers()['content-type'],
+      });
+
+      const processedResponse = await this.processResponse(response);
+      return processedResponse;
+    } catch (error) {
+      this.logger.error(`PUT request failed for ${url}:`, error.message);
+      throw error;
+    }
+  }
+
+  /**
+   * Hace una petición DELETE al endpoint especificado
+   * @param {string} endpoint - Endpoint de la API (ej: '/api/coupon/123')
+   * @param {Object} options - Opciones de la petición
+   */
+  async delete(endpoint, options = {}) {
+    const { headers = {}, useAuth = true } = options;
+    
+    const url = this.buildUrl(endpoint);
+    const requestHeaders = this.buildHeaders(headers, useAuth, 'application/json');
+
+    this.logger.debug(`DELETE ${url}`, { headers: requestHeaders });
+
+    try {
+      const response = await this.request.delete(url, {
+        headers: requestHeaders,
+        timeout: this.defaultTimeout,
+      });
+
+      this.logger.debug(`Response: ${response.status()}`, {
+        status: response.status(),
+        contentType: response.headers()['content-type'],
+      });
+
+      const processedResponse = await this.processResponse(response);
+      return processedResponse;
+    } catch (error) {
+      this.logger.error(`DELETE request failed for ${url}:`, error.message);
+      throw error;
+    }
+  }
+
+  /**
+   * Procesa la respuesta y extrae el JSON automáticamente
+   * @param {APIResponse} response - Respuesta de Playwright
+   */
+  async processResponse(response) {
+    const status = response.status();
+    let data = null;
+
+    try {
+      const contentType = response.headers()['content-type'] || '';
+      if (contentType.includes('application/json')) {
+        data = await response.json();
+      } else {
+        data = await response.text();
+      }
+    } catch (error) {
+      this.logger.warn('Error al procesar respuesta:', error.message);
+      data = null;
+    }
+
+    return {
+      status,
+      data,
+      headers: response.headers(),
+      ok: status >= 200 && status < 300
+    };
   }
 
   /**
@@ -76,9 +221,9 @@ export class ApiClient {
   /**
    * Construye los headers de la petición con autenticación
    */
-  buildHeaders(customHeaders = {}, useAuth = true) {
+  buildHeaders(customHeaders = {}, useAuth = true, contentType = 'application/json') {
     const headers = {
-      'Content-Type': 'application/json',
+      'Content-Type': contentType,
       Accept: 'application/json',
       ...customHeaders,
     };
