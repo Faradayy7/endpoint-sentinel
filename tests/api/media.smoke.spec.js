@@ -28,11 +28,11 @@ test.describe('Media API - Smoke Tests @smoke', () => {
     const response = await test.apiClient.get(config.mediaApi.endpoint);
 
     // Verificar que el endpoint esté disponible
-    expect(response.status()).toBe(200);
-    expect(test.apiClient.isSuccessResponse(response)).toBe(true);
+    expect(response.status).toBe(200);
+    expect(response.ok).toBe(true);
 
     // Verificar que retorna contenido JSON válido
-    const data = await test.apiClient.validateAndExtractJson(response);
+    const data = response.data;
     expect(data).toBeDefined();
     
     logger.info('✅ Endpoint /api/media está funcionando correctamente');
@@ -44,9 +44,9 @@ test.describe('Media API - Smoke Tests @smoke', () => {
       useAuth: true,
     });
 
-    expect(response.status()).toBe(200);
+    expect(response.status).toBe(200);
     
-    const data = await test.apiClient.validateAndExtractJson(response);
+    const data = response.data;
     expect(data).toBeDefined();
     
     logger.info('✅ Autenticación está funcionando correctamente');
@@ -60,9 +60,9 @@ test.describe('Media API - Smoke Tests @smoke', () => {
       },
     });
 
-    expect(response.status()).toBe(200);
+    expect(response.status).toBe(200);
     
-    const data = await test.apiClient.validateAndExtractJson(response);
+    const data = response.data;
     expect(data).toBeDefined();
     
     // Si es un array, verificar que no exceda el límite
@@ -81,9 +81,9 @@ test.describe('Media API - Smoke Tests @smoke', () => {
       },
     });
 
-    expect(response.status()).toBe(200);
+    expect(response.status).toBe(200);
     
-    const data = await test.apiClient.validateAndExtractJson(response);
+    const data = response.data;
     expect(data).toBeDefined();
     
     logger.info('✅ Filtro por tipo de media está funcionando correctamente');
@@ -98,8 +98,8 @@ test.describe('Media API - Smoke Tests @smoke', () => {
     // Dependiendo de la API, podría retornar 401 (no autorizado) o 200 con datos limitados
     // Ajustar según el comportamiento esperado de tu API
     const acceptableStatuses = [200, 401, 403];
-    expect(acceptableStatuses).toContain(response.status());
+    expect(acceptableStatuses).toContain(response.status);
     
-    logger.info(`✅ Manejo de peticiones sin autenticación: Status ${response.status()}`);
+    logger.info(`✅ Manejo de peticiones sin autenticación: Status ${response.status}`);
   });
 });
