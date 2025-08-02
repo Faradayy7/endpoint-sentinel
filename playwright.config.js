@@ -17,7 +17,7 @@ export default defineConfig({
   
   // Reportes de pruebas
   reporter: [
-    ['html', { outputFolder: 'test-results/html-report' }],
+    ['html', { outputFolder: 'playwright-report' }],
     ['json', { outputFile: 'test-results/test-results.json' }],
     ['list']
   ],
