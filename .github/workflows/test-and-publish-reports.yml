@@ -40,7 +40,7 @@ jobs:
       run: npx playwright install
 
     - name: 🧪 Run tests
-      run: npx playwright test --reporter=html,json
+      run: npx playwright test --reporter=html --reporter=json
       env:
         API_BASE_URL: ${{ secrets.API_BASE_URL }}
         API_TOKEN: ${{ secrets.API_TOKEN }}
@@ -48,12 +48,26 @@ jobs:
     - name: 📁 Verify test reports generated
       run: |
         echo "📁 Checking report directory..."
-        ls -la playwright-report/
+        ls -la playwright-report/ || echo "⚠️ playwright-report not found"
         echo "📊 Checking test-results directory..."
-        ls -la test-results/
+        ls -la test-results/ || echo "⚠️ test-results not found"
+        echo "📄 Checking for JSON results..."
+        if [ -f "test-results/test-results.json" ]; then
+          echo "✅ JSON results found"
+          echo "📏 JSON size: $(wc -c < test-results/test-results.json) bytes"
+        else
+          echo "❌ JSON results NOT found"
+        fi
+        echo "� Checking for HTML report..."
+        if [ -f "playwright-report/index.html" ]; then
+          echo "✅ HTML report found"
+          echo "📏 HTML size: $(wc -c < playwright-report/index.html) bytes"
+        else
+          echo "❌ HTML report NOT found"
+        fi
         echo "✅ Verification completed"
-        echo "📈 Report files found:"
-        find playwright-report -name "*.html" -o -name "*.json" | head -5
+        echo "📈 All files found:"
+        find . -name "*.html" -o -name "test-results.json" 2>/dev/null | head -10
 
     - name: 📅 Generate timestamp
       id: timestamp
@@ -88,14 +102,20 @@ jobs:
       if: always()
       with:
         name: test-results
-        path: playwright-report/
+        path: |
+          playwright-report/
+          test-results/
         retention-days: 30
 
     - name: 🔔 Send Slack notification (Intelligent)
       if: always()
       continue-on-error: true
       run: |
-        echo "🚀 Enviando notificación Slack..."
+        echo "🚀 Preparando notificación Slack..."
+        echo "📂 Verificando archivos necesarios..."
+        echo "🔍 JSON results: $(ls -la test-results/test-results.json 2>/dev/null || echo 'NOT FOUND')"
+        echo "🔍 HTML report: $(ls -la playwright-report/index.html 2>/dev/null || echo 'NOT FOUND')"
+        echo "🔔 Ejecutando notificador inteligente..."
         node scripts/intelligent-notifier.js || echo "⚠️ Notificación falló pero continuamos"
       env:
         SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
