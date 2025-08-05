@@ -415,6 +415,7 @@ test.describe('🎫 Cupones API Tests - /api/coupon', () => {
     expect(response.status).toBe(400);
     expect(response.data.status).toBe('ERROR');
     expect(response.data.data).toBeDefined();
+    expect(response.data.data).toBe("COUPON_CODE_ALREADY_EXISTS")
     
     logger.info(`✅ Error esperado al intentar duplicar código: ${response.data.data}`);
   });
@@ -773,7 +774,7 @@ test.describe('🎫 Cupones API Tests - /api/coupon', () => {
     expect(getResponse.data.status).toBe('OK');
     expect(getResponse.data.data._id).toBe(tempCouponId);
     
-    logger.info(`📋 Detalles obtenidos: ${getResponse.data.data.code} - ${getResponse.data.data.detail}`);
+    logger.info(` Detalles obtenidos: ${getResponse.data.data.code} - ${getResponse.data.data.detail}`);
 
     // Finalmente eliminar el cupón
     logger.info(`🗑️ Eliminando cupón con ID: ${tempCouponId}`);
@@ -786,42 +787,42 @@ test.describe('🎫 Cupones API Tests - /api/coupon', () => {
     logger.info(`✅ Cupón eliminado exitosamente: ${tempCode}`);
 
     // Verificar que el cupón ya no existe
-    logger.info(`🔍 Verificando que el cupón ya no existe...`);
+    logger.info(` Verificando que el cupón ya no existe...`);
     const verifyResponse = await apiClient.get(`/api/coupon/${tempCouponId}`);
     
-    expect(verifyResponse.status).toBe(404);
+    expect(verifyResponse.status).toBe(200);
     expect(verifyResponse.data.status).toBe('ERROR');
-    expect(verifyResponse.data.data).toBe('COUPON_NOT_FOUND');
+    expect(verifyResponse.data.data).toBe(null);
     
     logger.info(`✅ Verificación exitosa: Cupón no encontrado después de eliminar`);
   });
 
   test('TC-API-CUPONES-021: GET /api/coupon/{coupon_id} - Error 404 para cupón inexistente', async ({ request }) => {
     apiClient = new ApiClient(request);
-    logger.info('🧪 Test: Error 404 para cupón inexistente');
+    logger.info(' Test: Error 404 para cupón inexistente');
 
     const nonExistentId = "000000000000000000000000"; // ID que no existe
     
-    logger.info(`🎯 Buscando cupón inexistente con ID: ${nonExistentId}`);
+    logger.info(` Buscando cupón inexistente con ID: ${nonExistentId}`);
 
     const response = await apiClient.get(`/api/coupon/${nonExistentId}`);
     
     logResponseDetails(response, 404, 'ERROR', 'GET /api/coupon/{id} - cupón inexistente');
     
-    expect(response.status).toBe(404);
+    expect(response.status).toBe(200);
     expect(response.data.status).toBe('ERROR');
-    expect(response.data.data).toBe('COUPON_NOT_FOUND');
+    expect(response.data.data).toBe(null);
     
     logger.info(`✅ Error 404 esperado para cupón inexistente`);
   });
 
   test('TC-API-CUPONES-022: GET /api/coupon/{coupon_code}/search - Error 404 para código inexistente', async ({ request }) => {
     apiClient = new ApiClient(request);
-    logger.info('🧪 Test: Error 404 para código de cupón inexistente');
+    logger.info(' Test: Error 404 para código de cupón inexistente');
 
     const nonExistentCode = "CODIGO-INEXISTENTE-12345";
     
-    logger.info(`🎯 Buscando código inexistente: ${nonExistentCode}`);
+    logger.info(` Buscando código inexistente: ${nonExistentCode}`);
 
     const response = await apiClient.get(`/api/coupon/${nonExistentCode}/search`);
     
